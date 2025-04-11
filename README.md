@@ -53,13 +53,13 @@ Sunucu 5000 portunda çalışıyor
 
 API Endpoint'leri
 Kullanıcılar
-POST /api/users/register - Yeni bir kullanıcı kaydı oluşturur.
-POST /api/users/login - Kullanıcı girişi yapar.
+-POST /api/users/register - Yeni bir kullanıcı kaydı oluşturur.
+-POST /api/users/login - Kullanıcı girişi yapar.
 Kitaplar
-GET /api/books - Tüm kitapları listeler.
-POST /api/books - Yeni bir kitap ekler.
-PUT /api/books/:id - Mevcut bir kitabı günceller.
-DELETE /api/books/:id - Bir kitabı siler.
+-GET /api/books - Tüm kitapları listeler.
+-POST /api/books - Yeni bir kitap ekler.
+-PUT /api/books/:id - Mevcut bir kitabı günceller.
+-DELETE /api/books/:id - Bir kitabı siler.
 Ödünç Alma
-POST /api/borrow - Kitap ödünç alır.
-POST /api/return - Kitap iade eder.
+-POST /api/borrow - Kitap ödünç alır.
+-POST /api/return - Kitap iade eder.
