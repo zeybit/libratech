@@ -74,32 +74,4 @@ class BookService {
       throw Exception('Kitap silinemedi');
     }
   }
-
-  Future<void> borrowBook(String token, String id) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/books/$id/borrow'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Kitap ödünç alınamadı');
-    }
-  }
-
-  Future<void> returnBook(String token, String id) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/books/$id/return'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Kitap iade edilemedi');
-    }
-  }
 }

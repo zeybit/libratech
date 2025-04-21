@@ -8,13 +8,22 @@ class AuthService {
   // If testing on a real device, use your computer's IP address instead of localhost
   final String baseUrl = 'http://localhost:5000/api';
 
-  // Giriş işlemi ve token döndürme
+  // Update the login method to include any potentially missing fields
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      // Print the request before sending it
+      print(
+        'Login request: ${jsonEncode({'email': email, 'password': password})}',
+      );
+
       final response = await http.post(
         Uri.parse('$baseUrl/users/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          // You may need additional fields based on your backend API requirements
+        }),
       );
 
       print('Login response status: ${response.statusCode}');
@@ -26,7 +35,9 @@ class AuthService {
         return {
           'success': true,
           'token': data['token'],
-          'role': data['role'] ?? 'user',
+          'userId':
+              data['userId'] ?? data['user']?['_id'], // Try to extract userId
+          'role': data['role'] ?? data['user']?['role'] ?? 'user',
         };
       } else {
         // Return the error message from the server
