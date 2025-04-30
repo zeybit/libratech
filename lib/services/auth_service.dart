@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class AuthService {
   // Use the actual IP address instead of localhost if testing on a real device
   // If testing on a real device, use your computer's IP address instead of localhost
-  final String baseUrl = 'http://localhost:5000/api';
+  static const String baseUrl = 'http://localhost:5000/api';
 
   // Update the login method to include any potentially missing fields
   Future<Map<String, dynamic>> login(String email, String password) async {

@@ -4,11 +4,10 @@ import 'dart:convert';
 
 class BookDetailScreen extends StatefulWidget {
   final String bookId;
-  // Make token optional since we removed authentication from the API
   final String? token;
 
   const BookDetailScreen({Key? key, required this.bookId, this.token})
-    : super(key: key);
+      : super(key: key);
 
   @override
   State<BookDetailScreen> createState() => _BookDetailScreenState();
@@ -27,19 +26,13 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   Future<void> fetchBookDetails() async {
     try {
-      print('Fetching book details for ID: ${widget.bookId}');
-
       final response = await http.get(
         Uri.parse('http://localhost:5000/api/books/${widget.bookId}'),
         headers: {
           'Content-Type': 'application/json',
-          // Only include Authorization if token is provided
           if (widget.token != null) 'Authorization': 'Bearer ${widget.token}',
         },
       );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         setState(() {
@@ -53,7 +46,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         });
       }
     } catch (e) {
-      print('Exception: $e');
       setState(() {
         errorMessage = 'Bağlantı hatası: $e';
         isLoading = false;
@@ -65,22 +57,21 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(bookData?['title'] ?? 'Kitap Detayları'),
-        backgroundColor: Colors.blue[900],
+        title: Text(bookData?['title'] ?? 'Kitap Detayları',
+        style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF6D4C41), // Kahverengi tonlarında
       ),
-      body:
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : errorMessage.isNotEmpty
-              ? Center(
-                child: Text(errorMessage, style: TextStyle(color: Colors.red)),
-              )
-              : _buildBookDetails(),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : errorMessage.isNotEmpty
+          ? Center(
+        child: Text(errorMessage, style: TextStyle(color: Colors.red)),
+      )
+          : _buildBookDetails(),
     );
   }
 
   Widget _buildBookDetails() {
-    // Handle publishYear instead of publishedDate
     String publishYear = '';
     if (bookData?['publishYear'] != null) {
       publishYear = bookData!['publishYear'].toString();
@@ -91,12 +82,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Book cover image
+          // Book cover image with shadow and rounded corners
           if (bookData?['coverImage'] != null)
             Center(
               child: Container(
                 height: 250,
+                width: 170,
                 decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withOpacity(0.5),
@@ -106,20 +99,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     ),
                   ],
                 ),
-                child: Image.network(
-                  bookData!['coverImage'],
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Container(
-                        height: 250,
-                        width: 170,
-                        color: Colors.grey[300],
-                        child: const Icon(
-                          Icons.book,
-                          size: 50,
-                          color: Colors.grey,
-                        ),
-                      ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    bookData!['coverImage'],
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.book, size: 50, color: Colors.grey),
+                    ),
+                  ),
                 ),
               ),
             )
@@ -135,15 +124,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
           const SizedBox(height: 24),
 
-          // Title
+          // Title with larger font size
           Text(
             bookData?['title'] ?? 'Başlık yok',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                fontSize: 26, fontWeight: FontWeight.bold, color: Colors.brown),
           ),
 
           const SizedBox(height: 8),
 
-          // Author
+          // Author with improved styling
           Row(
             children: [
               const Text(
@@ -169,7 +159,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
           const SizedBox(height: 8),
 
-          // Published Year - Changed from publishedDate to publishYear
+          // Published Year
           Row(
             children: [
               const Text(
@@ -195,7 +185,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
           const SizedBox(height: 8),
 
-          // Page Count - Changed from pageCount to pages
+          // Page Count
           Row(
             children: [
               const Text(
@@ -206,7 +196,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             ],
           ),
 
-          // Language field
+          // Language
           const SizedBox(height: 8),
           Row(
             children: [
@@ -218,7 +208,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             ],
           ),
 
-          // Genre field
+          // Genre
           const SizedBox(height: 8),
           Row(
             children: [
@@ -232,7 +222,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
           const SizedBox(height: 16),
 
-          // Description
+          // Description with more padding
           const Text(
             'Açıklama:',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -242,15 +232,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
           const SizedBox(height: 24),
 
-          // Availability status
+          // Availability status with a colored container
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color:
-                  bookData?['available'] == true
-                      ? Colors.green[100]
-                      : Colors.red[100],
-              borderRadius: BorderRadius.circular(8),
+              color: bookData?['available'] == true
+                  ? Colors.green[100]
+                  : Colors.red[100],
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -259,19 +248,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   bookData?['available'] == true
                       ? Icons.check_circle
                       : Icons.cancel,
-                  color:
-                      bookData?['available'] == true
-                          ? Colors.green[700]
-                          : Colors.red[700],
+                  color: bookData?['available'] == true
+                      ? Colors.green[700]
+                      : Colors.red[700],
                 ),
                 const SizedBox(width: 8),
                 Text(
                   bookData?['available'] == true ? 'Mevcut' : 'Ödünç Verilmiş',
                   style: TextStyle(
-                    color:
-                        bookData?['available'] == true
-                            ? Colors.green[700]
-                            : Colors.red[700],
+                    color: bookData?['available'] == true
+                        ? Colors.green[700]
+                        : Colors.red[700],
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -281,12 +268,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
           const SizedBox(height: 24),
 
-          // Borrow button if available
+          // Borrow button
           if (bookData?['available'] == true)
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Implement book borrowing functionality here
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Kitap ödünç alma isteği gönderildi'),
@@ -294,7 +280,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[900],
+                  backgroundColor: Colors.brown[800], // Kahverengi buton
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 12,

@@ -2,71 +2,67 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/user/userHome_screen.dart';
-import 'screens/user/user_profile.dart'; // User profile screen import
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/login/login_screen.dart';
-import 'widgets/borrowed_books_screen.dart'; // Move this to a separate file
+import 'screens/login/register_screen.dart';
+import 'screens/user/user_profile.dart';
+import 'widgets/borrowed_books_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token');
-  final role = prefs.getString('role');
-
-  runApp(MyApp(token: token, role: role));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final String? token;
-  final String? role;
-
-  const MyApp({super.key, this.token, this.role});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Libratech',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      initialRoute: '/',
-      onGenerateRoute: (settings) {
-        // Dinamik route oluşturma
-        if (settings.name == '/profile') {
-          return MaterialPageRoute(
-            builder:
-                (context) =>
-                    token != null
-                        ? UserProfileScreen(token: token!)
-                        : const LoginScreen(),
-          );
-        } else if (settings.name == '/borrowed-books') {
-          return MaterialPageRoute(
-            builder:
-                (context) =>
-                    token != null
-                        ? BorrowedBooksScreen(token: token!)
-                        : const LoginScreen(),
+    return FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const MaterialApp(
+            home: Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
           );
         }
-        // Default route
-        return MaterialPageRoute(builder: (context) => _getHomeScreen());
-      },
-      routes: {'/': (context) => _getHomeScreen()},
-    );
-  }
 
-  Widget _getHomeScreen() {
-    if (token != null) {
-      if (role == 'admin') {
-        return AdminHomeScreen();
-      } else {
-        return UserHomeScreen(token: token!);
-      }
-    } else {
-      return const LoginScreen();
-    }
+        final prefs = snapshot.data!;
+        final token = prefs.getString('token');
+        final role = prefs.getString('role');
+
+        Widget home;
+        if (token != null) {
+          if (role == 'admin') {
+            home = const AdminHomeScreen();
+          } else {
+            home = UserHomeScreen(token: token);
+          }
+        } else {
+          home = const LoginScreen();
+        }
+
+        return MaterialApp(
+          title: 'Libratech',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: home,
+          routes: {
+            '/signup': (_) => const SignUpScreen(),
+            '/profile': (_) => token != null
+                ? UserProfileScreen(token: token)
+                : const LoginScreen(),
+            '/borrowed-books': (_) => token != null
+                ? BorrowedBooksScreen(token: token)
+                : const LoginScreen(),
+          },
+        );
+      },
+    );
   }
 }

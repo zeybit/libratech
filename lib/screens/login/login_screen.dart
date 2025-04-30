@@ -17,15 +17,21 @@ class _LoginScreenState extends State<LoginScreen> {
   final _nameController = TextEditingController();
   final AuthService _authService = AuthService();
 
-  bool _isRegistering = false; // To toggle between login and register
+  bool _isRegistering = false;
+  bool _obscurePassword = true;
   String _error = '';
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
 
   void _login() async {
     final name = _nameController.text;
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    // Basic validation
     if (email.isEmpty || password.isEmpty || name.isEmpty) {
       setState(() {
         _error = 'İsim, e-posta ve şifre alanları boş bırakılamaz.';
@@ -43,36 +49,27 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response['success'] == true) {
         final token = response['token'];
         final role = response['role'];
-        final userId = response['userId']; // Extract userId
-        // Use provided name if available, otherwise use the name from response
-        final userName =
-            name.isNotEmpty
-                ? name
-                : response['name'] ?? response['user']?['name'] ?? 'Kullanıcı';
+        final userId = response['userId'];
+        final userName = name.isNotEmpty
+            ? name
+            : response['name'] ?? response['user']?['name'] ?? 'Kullanıcı';
 
-        // SharedPreferences ile token, userId ve kullanıcı bilgilerini sakla
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
         await prefs.setString('role', role);
-        await prefs.setString('userEmail', email); // Email bilgisini kaydet
-
-        if (userId != null) {
-          await prefs.setString('userId', userId);
-        }
-
-        // Kullanıcı adını kaydet - both from form input and response
+        await prefs.setString('userEmail', email);
+        await prefs.setString('userId', userId ?? '');
         await prefs.setString('userName', userName);
 
-        // Giriş başarılı, role göre yönlendir
+        if (!mounted) return;
+
         if (role == 'admin') {
           Navigator.pushReplacement(
-            // ignore: use_build_context_synchronously
             context,
             MaterialPageRoute(builder: (_) => const AdminHomeScreen()),
           );
         } else {
           Navigator.pushReplacement(
-            // ignore: use_build_context_synchronously
             context,
             MaterialPageRoute(builder: (_) => UserHomeScreen(token: token)),
           );
@@ -89,13 +86,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Add register method
   void _register() async {
     final name = _nameController.text;
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    // Basic validation
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
       setState(() {
         _error = 'Tüm alanlar doldurulmalıdır.';
@@ -111,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await _authService.register(name, email, password);
 
       if (response['success'] == true) {
-        // Kayıt bilgilerini LocalStorage'a kaydet
         final userData = response['data'];
         if (userData != null) {
           final prefs = await SharedPreferences.getInstance();
@@ -121,15 +115,12 @@ class _LoginScreenState extends State<LoginScreen> {
           await prefs.setString('token', userData['token']);
         }
 
-        // Registration successful, show success message and switch to login
         setState(() {
           _isRegistering = false;
           _error = '';
-          // Do not clear name field when switching to login
           _emailController.clear();
           _passwordController.clear();
 
-          // Show snackbar for success
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Kayıt başarılı! Şimdi giriş yapabilirsiniz.'),
@@ -148,7 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Toggle between login and register modes
   void _toggleMode() {
     setState(() {
       _isRegistering = !_isRegistering;
@@ -158,26 +148,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color mainBrown = const Color(0xFF6D4C41);
+
     return Scaffold(
-      appBar: AppBar(title: Text(_isRegistering ? 'Kayıt Ol' : 'Giriş Yap')),
+      appBar: AppBar(
+        backgroundColor: mainBrown,
+        title: Text(_isRegistering ? 'Kayıt Ol' : 'Giriş Yap'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Uygulama logosu veya ismi
             Container(
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(vertical: 30.0),
               child: Column(
                 children: [
-                  const Icon(Icons.book, size: 80, color: Colors.blue),
+                  Icon(Icons.book, size: 80, color: mainBrown),
                   const SizedBox(height: 16),
                   Text(
                     'LibraTech',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue[900],
+                      color: mainBrown,
                     ),
                   ),
                   Text(
@@ -187,7 +181,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            // Name field - Always visible
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(
@@ -209,20 +202,30 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
                 labelText: 'Şifre',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    color: mainBrown,
+                  ),
+                  onPressed: _togglePasswordVisibility,
+                ),
               ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isRegistering ? _register : _login,
-              child: Text(_isRegistering ? 'Kayıt Ol' : 'Giriş Yap'),
               style: ElevatedButton.styleFrom(
+                backgroundColor: mainBrown,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Colors.blue[900],
+              ),
+              child: Text(
+                _isRegistering ? 'Kayıt Ol' : 'Giriş Yap',
+                style: const TextStyle(color: Colors.white),
               ),
             ),
             if (_error.isNotEmpty)
@@ -241,6 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 _isRegistering
                     ? 'Zaten hesabınız var mı? Giriş yapın'
                     : 'Hesabınız yok mu? Kayıt olun',
+                style: TextStyle(color: mainBrown),
               ),
             ),
           ],
