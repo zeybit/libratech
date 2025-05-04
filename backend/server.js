@@ -9,11 +9,23 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// filepath: c:\Users\zeybit\libratech\backend\server.js
+// Replace the current CORS configuration with this simpler version
+app.use(cors({
+    origin: '*',
+    
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  }));
 
+app.use(express.json());
+app.options('*', cors());
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/books', require('./routes/bookRoutes'));
-
+app.use('/api/borrow', require('./routes/borrowRoutes'));
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Sunucu ${PORT} portunda çalışıyor`));
+app.listen(5000, '0.0.0.0', () => {
+  console.log('Server running on port 5000');
+});
+app.get('/', (req, res) => {
+  res.send('Sunucu çalışıyor 🎉');
+});

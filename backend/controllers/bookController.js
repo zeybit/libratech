@@ -11,6 +11,7 @@ exports.addBook = async (req, res) => {
   }
 };
 
+
 // Tüm kitapları getir
 exports.getBooks = async (req, res) => {
   try {
@@ -20,6 +21,34 @@ exports.getBooks = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// ...existing code...
+
+// Get book by ID
+exports.getBookById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    console.log('Requested book ID:', id);
+    
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: 'Invalid book ID format' });
+    }
+    
+    const book = await Book.findById(id);
+    
+    if (!book) {
+      console.log('Book not found in database');
+      return res.status(404).json({ message: 'Book not found' });
+    }
+    
+    console.log('Book found:', book.title);
+    res.status(200).json(book);
+  } catch (error) {
+    console.error('Error fetching book details:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// ...existing code...
 
 // Kitap güncelle
 exports.updateBook = async (req, res) => {

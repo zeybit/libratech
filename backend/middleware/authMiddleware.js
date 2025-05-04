@@ -1,28 +1,34 @@
 const jwt = require('jsonwebtoken');
+const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 
-const protect = async (req, res, next) => {
+const protect = asyncHandler(async (req, res, next) => {
   let token;
 
-  // Token'ı başlıktan al
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
     try {
       token = req.headers.authorization.split(' ')[1];
-
-      // Token'ı doğrula
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Kullanıcıyı bul ve req.user'ı ayarla
       req.user = await User.findById(decoded.id).select('-password');
+      // Add isAdmin info from token
+      req.user.isAdmin = decoded.isAdmin;
+      
       next();
-    } catch (err) {
-      res.status(401).json({ message: 'Geçersiz veya süresi dolmuş token.' });
+    } catch (error) {
+      console.error(error);
+      res.status(401);
+      throw new Error('Token geçerli değil');
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Token bulunamadı.' });
+    res.status(401);
+    throw new Error('Token bulunamadı');
   }
-};
+});
 
-module.exports = protect;
+module.exports = protect;  // Export directly, not as an object
