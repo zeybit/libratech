@@ -70,6 +70,67 @@ class BookService {
     }
   }
 
+  // Kitap detayını ID'ye göre almak
+  Future<Book> getBookById(String token, String id) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/books/$id'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      try {
+        final decoded = jsonDecode(response.body);
+        return Book.fromJson(decoded);
+      } catch (e) {
+        throw Exception('JSON parse edilemedi: $e');
+      }
+    } else {
+      throw Exception('Kitap detayları alınamadı: ${response.statusCode}');
+    }
+  }
+
+  // Kitabı tüm alanlarıyla güncellemek
+  Future<void> updateBookFull({
+    required String token,
+    required String id,
+    required String title,
+    required String author,
+    required String isbn,
+    required int publishYear,
+    required String publisher,
+    required int pages,
+    required String language,
+    required String genre,
+    required String description,
+    required String coverImage,
+    required bool available,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/books/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'title': title,
+        'author': author,
+        'isbn': isbn,
+        'publishYear': publishYear,
+        'publisher': publisher,
+        'pages': pages,
+        'language': language,
+        'genre': genre,
+        'description': description,
+        'coverImage': coverImage,
+        'available': available,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Kitap güncellenemedi: ${response.body}');
+    }
+  }
+
   // Kitap güncellemek
   Future<void> updateBook(
     String token,

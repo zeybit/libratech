@@ -74,7 +74,7 @@ class AdminHomeScreen extends StatelessWidget {
                 context,
                 'Kullanıcı Yönetimi',
                 Icons.people,
-                'Kullanıcıları yönet ve yetkilerini düzenle.',
+                'Kullanıcıları gör.',
                 () {
                   Navigator.push(
                     context,
@@ -82,17 +82,6 @@ class AdminHomeScreen extends StatelessWidget {
                       builder: (context) => AdminUserPage(), // token geçildi
                     ),
                   );
-                },
-                mainBrown,
-              ),
-              const SizedBox(height: 16),
-              _buildAdminFeature(
-                context,
-                'Raporlar',
-                Icons.bar_chart,
-                'Sisteme ait istatistikleri ve raporları görüntüle.',
-                () {
-                  _navigateToReports(context);
                 },
                 mainBrown,
               ),
@@ -145,27 +134,6 @@ class AdminHomeScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  void _navigateToBookManagement(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    Navigator.pushNamed(
-      context,
-      '/admin/books',
-      arguments: {'token': userProvider.token},
-    );
-  }
-
-  void _navigateToUserManagement(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Bu özellik henüz hazır değil')),
-    );
-  }
-
-  void _navigateToReports(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Bu özellik henüz hazır değil')),
     );
   }
 }

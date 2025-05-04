@@ -53,30 +53,35 @@ class _MyAppState extends State<MyApp> {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home:
-      _isLoading
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : const AuthWrapper(),
+          _isLoading
+              ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+              : const AuthWrapper(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home':
             (context) => Consumer<UserProvider>(
-          builder:
-              (ctx, userProvider, _) =>
-              UserHomeScreen(token: userProvider.token),
-        ),
-        '/admin': (context) => const AdminHomeScreen(token: '',),
+              builder:
+                  (ctx, userProvider, _) =>
+                      UserHomeScreen(token: userProvider.token),
+            ),
+        '/admin':
+            (context) => Consumer<UserProvider>(
+              builder:
+                  (ctx, userProvider, _) =>
+                      AdminHomeScreen(token: userProvider.token),
+            ),
         '/profile':
             (context) => Consumer<UserProvider>(
-          builder:
-              (ctx, userProvider, _) =>
-              UserProfileScreen(token: userProvider.token),
-        ),
+              builder:
+                  (ctx, userProvider, _) =>
+                      UserProfileScreen(token: userProvider.token),
+            ),
         '/borrowed-books':
             (context) => Consumer<UserProvider>(
-          builder:
-              (ctx, userProvider, _) =>
-              BorrowedBooksScreen(token: userProvider.token),
-        ),
+              builder:
+                  (ctx, userProvider, _) =>
+                      BorrowedBooksScreen(token: userProvider.token),
+            ),
       },
       onGenerateRoute: (settings) {
         // Dinamik route oluşturma için ek özellikler

@@ -20,6 +20,28 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
     _borrowedBooksFuture = _borrowService.getBorrowedBooks(widget.token);
   }
 
+  Future<void> _returnBook(String borrowId) async {
+    try {
+      final success = await _borrowService.returnBook(widget.token, borrowId);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kitap başarıyla iade edildi')),
+        );
+        setState(() {
+          _borrowedBooksFuture = _borrowService.getBorrowedBooks(widget.token);
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Kitap iade edilemedi')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Hata: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,22 +67,35 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
             itemCount: books.length,
             itemBuilder: (context, index) {
               final book = books[index];
+              // Get the book information - adapt this based on your actual API response structure
+              final bookInfo = book['book'] is Map ? book['book'] : {};
+              final String title =
+                  bookInfo['title'] ?? book['bookTitle'] ?? 'Başlık yok';
+              final String author =
+                  bookInfo['author'] ?? book['bookAuthor'] ?? 'Yazar yok';
+              final DateTime? borrowDate =
+                  book['borrowDate'] != null
+                      ? DateTime.parse(book['borrowDate'])
+                      : null;
               final DateTime? dueDate =
                   book['dueDate'] != null
                       ? DateTime.parse(book['dueDate'])
                       : null;
+              final String id = book['_id'] ?? '';
 
               return Card(
                 margin: const EdgeInsets.all(8.0),
                 child: ListTile(
-                  title: Text(book['title'] ?? 'Başlık yok'),
+                  title: Text(title),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(book['author'] ?? 'Yazar yok'),
+                      Text(author),
+                      if (borrowDate != null)
+                        Text('Alınma Tarihi: ${_formatDate(borrowDate)}'),
                       if (dueDate != null)
                         Text(
-                          'İade Tarihi: ${dueDate.day}/${dueDate.month}/${dueDate.year}',
+                          'İade Tarihi: ${_formatDate(dueDate)}',
                           style: TextStyle(
                             color:
                                 DateTime.now().isAfter(dueDate)
@@ -72,14 +107,7 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
                     ],
                   ),
                   trailing: ElevatedButton(
-                    onPressed: () {
-                      // İade işlemi eklenebilir
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('İade özelliği henüz eklenmedi'),
-                        ),
-                      );
-                    },
+                    onPressed: () => _returnBook(id),
                     child: const Text('İade Et'),
                   ),
                 ),
@@ -89,5 +117,9 @@ class _BorrowedBooksScreenState extends State<BorrowedBooksScreen> {
         },
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

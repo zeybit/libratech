@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../models/book_model.dart'; // Make sure to import the Book model
 import '../../services/book_service.dart';
 import '../../services/borrow_service.dart';
 import '../../widgets/user_drawer.dart';
@@ -19,7 +20,8 @@ class UserHomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<UserHomeScreen> {
   final BookService _bookService = BookService();
   final BorrowService _borrowService = BorrowService();
-  late Future<List<Map<String, dynamic>>> _bookListFuture;
+  late Future<List<Book>>
+  _bookListFuture; // Changed to match BookService.getBooks() return type
   String? _userId;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -27,7 +29,7 @@ class _HomeScreenState extends State<UserHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _bookListFuture = _bookService.getBooks(widget.token) as Future<List<Map<String, dynamic>>>;
+    _bookListFuture = _bookService.getBooks(widget.token); // Removed the cast
     _getUserId();
   }
 
@@ -60,7 +62,9 @@ class _HomeScreenState extends State<UserHomeScreen> {
       _searchQuery = query.toLowerCase();
       // Eğer sorgu boşsa tüm kitapları göster, değilse filtrelenmiş listeyi göster
       if (_searchQuery.isEmpty) {
-        _bookListFuture = _bookService.getBooks(widget.token) as Future<List<Map<String, dynamic>>>;
+        _bookListFuture = _bookService.getBooks(
+          widget.token,
+        ); // Removed the cast
       }
     });
   }
@@ -86,7 +90,9 @@ class _HomeScreenState extends State<UserHomeScreen> {
         );
         // Kitap listesini yenile
         setState(() {
-          _bookListFuture = _bookService.getBooks(widget.token) as Future<List<Map<String, dynamic>>>;
+          _bookListFuture = _bookService.getBooks(
+            widget.token,
+          ); // Removed the cast
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -112,7 +118,9 @@ class _HomeScreenState extends State<UserHomeScreen> {
     ).then((_) {
       // Kullanıcı geri döndüğünde kitap listesini yenile
       setState(() {
-        _bookListFuture = _bookService.getBooks(widget.token) as Future<List<Map<String, dynamic>>>;
+        _bookListFuture = _bookService.getBooks(
+          widget.token,
+        ); // Removed the cast
       });
     });
   }
@@ -158,7 +166,8 @@ class _HomeScreenState extends State<UserHomeScreen> {
           ),
           // Kitap listesi
           Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
+            child: FutureBuilder<List<Book>>(
+              // Changed to match Book model
               future: _bookListFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -176,10 +185,8 @@ class _HomeScreenState extends State<UserHomeScreen> {
                     _searchQuery.isEmpty
                         ? books
                         : books.where((book) {
-                          final title =
-                              book['title']?.toString().toLowerCase() ?? '';
-                          final author =
-                              book['author']?.toString().toLowerCase() ?? '';
+                          final title = book.title.toLowerCase();
+                          final author = book.author.toLowerCase();
                           return title.contains(_searchQuery) ||
                               author.contains(_searchQuery);
                         }).toList();
@@ -194,16 +201,16 @@ class _HomeScreenState extends State<UserHomeScreen> {
                   itemCount: filteredBooks.length,
                   itemBuilder: (context, index) {
                     final book = filteredBooks[index];
-                    final bool isAvailable = book['available'] == true;
+                    final bool isAvailable = book.available;
 
                     return Card(
                       margin: const EdgeInsets.all(8.0),
                       child: ListTile(
-                        title: Text(book['title'] ?? 'Başlık yok'),
+                        title: Text(book.title),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(book['author'] ?? 'Yazar yok'),
+                            Text(book.author),
                             Text(
                               isAvailable
                                   ? 'Durum: Mevcut'
@@ -218,10 +225,7 @@ class _HomeScreenState extends State<UserHomeScreen> {
                         trailing:
                             isAvailable
                                 ? ElevatedButton(
-                                  onPressed:
-                                      () => _borrowBook(
-                                        book['_id'] ?? book['id'],
-                                      ),
+                                  onPressed: () => _borrowBook(book.id),
                                   child: const Text('Ödünç Al'),
                                 )
                                 : const Icon(
@@ -235,7 +239,7 @@ class _HomeScreenState extends State<UserHomeScreen> {
                             MaterialPageRoute(
                               builder:
                                   (context) => BookDetailScreen(
-                                    bookId: book['_id'] ?? book['id'],
+                                    bookId: book.id,
                                     token: widget.token,
                                   ),
                             ),

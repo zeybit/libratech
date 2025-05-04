@@ -154,9 +154,9 @@ class BorrowService {
         return [];
       }
 
-      // Make API request to get borrowed books
+      // Use the correct endpoint format - userId as part of the path, not a query parameter
       final response = await http.get(
-        Uri.parse('$baseUrl/borrows/user/$userId'),
+        Uri.parse('$baseUrl/borrows/$userId'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

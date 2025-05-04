@@ -3,10 +3,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/book_model.dart';
 import '../../services/book_service.dart';
-import '../book/book_detail.dart';
+
 import '../login/login_screen.dart';
 import 'add_book_screen.dart';
 import 'admin_drawer.dart';
+import 'edit_book_screen.dart';
 
 class BookManagementScreen extends StatefulWidget {
   final String token;
@@ -220,15 +221,26 @@ class _BookManagementScreenState extends State<BookManagementScreen> {
                             );
                           },
                         ),
+                        // Kitap kartındaki onTap metodunu güncelleme
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder:
-                                  (context) =>
-                                      BookDetailScreen(bookId: book.id),
+                                  (context) => EditBookScreen(
+                                    token: widget.token,
+                                    bookId: book.id,
+                                  ),
                             ),
-                          );
+                          ).then((updated) {
+                            if (updated == true) {
+                              setState(() {
+                                _bookListFuture = _bookService.getBooks(
+                                  widget.token,
+                                );
+                              });
+                            }
+                          });
                         },
                       ),
                     );
