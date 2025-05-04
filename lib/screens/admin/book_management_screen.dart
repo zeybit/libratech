@@ -49,14 +49,46 @@ class _BookManagementScreenState extends State<BookManagementScreen> {
   // Kitap silme işlemi
   void _deleteBook(String bookId) async {
     try {
-      await _bookService.deleteBook(widget.token, bookId);
+      if (bookId.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Kitap ID'si boş olamaz")));
+        return;
+      }
+
+      // Debug the token value
+      print("Token being used for deletion: ${widget.token}");
+
+      if (widget.token.isEmpty) {
+        // If token is empty, try to get it from shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        final token = prefs.getString('token') ?? '';
+
+        if (token.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Token bulunamadı, lütfen tekrar giriş yapın"),
+            ),
+          );
+          return;
+        }
+
+        await _bookService.deleteBook(token, bookId);
+      } else {
+        await _bookService.deleteBook(widget.token, bookId);
+      }
+
       setState(() {
         _bookListFuture = _bookService.getBooks(widget.token);
       });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Kitap başarıyla silindi")));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Silme işlemi başarısız: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Silme işlemi başarısız: $e")));
     }
   }
 
@@ -109,14 +141,18 @@ class _BookManagementScreenState extends State<BookManagementScreen> {
                 }
 
                 final books = snapshot.data!;
-                final filteredBooks = books.where((book) {
-                  final title = book.title.toLowerCase();
-                  final author = book.author.toLowerCase();
-                  return title.contains(_searchQuery) || author.contains(_searchQuery);
-                }).toList();
+                final filteredBooks =
+                    books.where((book) {
+                      final title = book.title.toLowerCase();
+                      final author = book.author.toLowerCase();
+                      return title.contains(_searchQuery) ||
+                          author.contains(_searchQuery);
+                    }).toList();
 
                 if (filteredBooks.isEmpty) {
-                  return const Center(child: Text("Arama sonucuna uygun kitap bulunamadı."));
+                  return const Center(
+                    child: Text("Arama sonucuna uygun kitap bulunamadı."),
+                  );
                 }
 
                 return ListView.builder(
@@ -133,13 +169,18 @@ class _BookManagementScreenState extends State<BookManagementScreen> {
                       ),
                       elevation: 5.0,
                       child: ListTile(
-                        title: Text(book.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(
+                          book.title,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(book.author),
                             Text(
-                              isAvailable ? 'Durum: Mevcut' : 'Durum: Ödünç Alınmış',
+                              isAvailable
+                                  ? 'Durum: Mevcut'
+                                  : 'Durum: Ödünç Alınmış',
                               style: TextStyle(
                                 color: isAvailable ? Colors.green : Colors.red,
                                 fontWeight: FontWeight.bold,
@@ -152,23 +193,30 @@ class _BookManagementScreenState extends State<BookManagementScreen> {
                           onPressed: () {
                             showDialog(
                               context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text("Kitabı Sil"),
-                                content: const Text("Bu kitabı silmek istediğinize emin misiniz?"),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(context).pop(),
-                                    child: const Text("İptal"),
+                              builder:
+                                  (context) => AlertDialog(
+                                    title: const Text("Kitabı Sil"),
+                                    content: const Text(
+                                      "Bu kitabı silmek istediğinize emin misiniz?",
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.of(context).pop(),
+                                        child: const Text("İptal"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          _deleteBook(book.id);
+                                        },
+                                        child: const Text(
+                                          "Sil",
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                      _deleteBook(book.id);
-                                    },
-                                    child: const Text("Sil", style: TextStyle(color: Colors.red)),
-                                  ),
-                                ],
-                              ),
                             );
                           },
                         ),
@@ -176,7 +224,9 @@ class _BookManagementScreenState extends State<BookManagementScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => BookDetailScreen(bookId: book.id),
+                              builder:
+                                  (context) =>
+                                      BookDetailScreen(bookId: book.id),
                             ),
                           );
                         },

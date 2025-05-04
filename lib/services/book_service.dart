@@ -19,7 +19,8 @@ class BookService {
         final decoded = jsonDecode(response.body);
         // JSON verisini Book nesnelerine dönüştür
         return List<Book>.from(
-            decoded.map((bookJson) => Book.fromJson(bookJson)));
+          decoded.map((bookJson) => Book.fromJson(bookJson)),
+        );
       } catch (e) {
         throw Exception('JSON parse edilemedi');
       }
@@ -70,10 +71,12 @@ class BookService {
   }
 
   // Kitap güncellemek
-  Future<void> updateBook(String token,
-      String id,
-      String title,
-      String author,) async {
+  Future<void> updateBook(
+    String token,
+    String id,
+    String title,
+    String author,
+  ) async {
     final response = await http.put(
       Uri.parse('$baseUrl/books/$id'), // URL burada düzeltildi
       headers: {
@@ -89,33 +92,38 @@ class BookService {
   }
 
   Future<void> deleteBook(String token, String bookId) async {
+    print("Deleting book with ID: $bookId");
+    print("Using token: $token"); // Log full token for debugging
+
     if (bookId.isEmpty) {
-      throw Exception("Geçersiz kitap ID'si");
+      throw Exception("Book ID cannot be empty");
     }
+
+    if (token.isEmpty) {
+      throw Exception("Token cannot be empty");
+    }
+
+    final url = Uri.parse('$baseUrl/books/$bookId');
 
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/books/$bookId'),
+        url,
         headers: {
-          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
         },
       );
 
-      if (response.statusCode == 200) {
-        // Başarıyla silindi
-        print('Kitap başarıyla silindi.');
-      } else if (response.statusCode == 401) {
-        // Token geçersizse
-        throw Exception('Geçersiz token');
-      } else {
-        // Diğer hata durumları
-        throw Exception('Kitap silinemedi: ${response.body}');
+      print("Delete response status: ${response.statusCode}");
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception(
+          'Failed to delete book: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
-      print('Hata oluştu: $e');
-      throw Exception('Kitap silme işlemi başarısız: $e');
+      print("Error in deleteBook: $e");
+      rethrow;
     }
   }
-
 }

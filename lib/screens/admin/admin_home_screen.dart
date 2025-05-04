@@ -7,7 +7,8 @@ import 'book_management_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   final String token; // Token parametresi eklendi
-  const AdminHomeScreen({Key? key, required this.token}) : super(key: key); // token parametresi const yapıcıya eklendi
+  const AdminHomeScreen({Key? key, required this.token})
+    : super(key: key); // token parametresi const yapıcıya eklendi
 
   @override
   Widget build(BuildContext context) {
@@ -52,11 +53,17 @@ class AdminHomeScreen extends StatelessWidget {
                 'Kitap Yönetimi',
                 Icons.book,
                 'Kitapları ekle, düzenle veya sil.',
-                    () {
+                () {
+                  print("Passing token to BookManagementScreen: $token");
+                  // Around line 50-60 where you navigate to BookManagementScreen
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BookManagementScreen(token: token), // token geçildi
+                      builder:
+                          (context) => BookManagementScreen(
+                            // Get token from provider instead of using the local variable
+                            token: token,
+                          ),
                     ),
                   );
                 },
@@ -68,7 +75,7 @@ class AdminHomeScreen extends StatelessWidget {
                 'Kullanıcı Yönetimi',
                 Icons.people,
                 'Kullanıcıları yönet ve yetkilerini düzenle.',
-                    () {
+                () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -84,7 +91,7 @@ class AdminHomeScreen extends StatelessWidget {
                 'Raporlar',
                 Icons.bar_chart,
                 'Sisteme ait istatistikleri ve raporları görüntüle.',
-                    () {
+                () {
                   _navigateToReports(context);
                 },
                 mainBrown,
@@ -97,13 +104,13 @@ class AdminHomeScreen extends StatelessWidget {
   }
 
   Widget _buildAdminFeature(
-      BuildContext context,
-      String title,
-      IconData icon,
-      String description,
-      VoidCallback onTap,
-      Color color,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    String description,
+    VoidCallback onTap,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

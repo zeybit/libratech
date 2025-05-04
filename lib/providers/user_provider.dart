@@ -44,37 +44,31 @@ class UserProvider with ChangeNotifier {
   // Load user data from SharedPreferences on app start
   Future<bool> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? token = prefs.getString('token');
+    final token = prefs.getString('token');
 
     if (token == null || token.isEmpty) {
       return false;
     }
 
+    // Set the token in the provider
     _token = token;
 
-    // Try to get user data from prefs
-    final String? userId = prefs.getString('userId');
-    final String? userName = prefs.getString('userName');
-    final String? userEmail = prefs.getString('userEmail');
-    final bool isAdmin = prefs.getBool('isAdmin') ?? false;
+    // Load user info from preferences
+    final userId = prefs.getString('userId') ?? '';
+    final userName = prefs.getString('userName') ?? '';
+    final userEmail = prefs.getString('userEmail') ?? '';
+    final isAdmin = prefs.getBool('isAdmin') ?? false;
 
-    // Also check token payload for admin status
-    final tokenData = _parseJwt(token);
-    final tokenAdmin = tokenData['isAdmin'] == true;
+    _user = User(
+      id: userId,
+      name: userName,
+      email: userEmail,
+      isAdmin: isAdmin,
+    );
 
-    if (userId != null) {
-      _user = User(
-        id: userId,
-        name: userName ?? '',
-        email: userEmail ?? '',
-        isAdmin: isAdmin || tokenAdmin,
-      );
-      _isAuthenticated = true;
-      notifyListeners();
-      return true;
-    }
-
-    return false;
+    _isAuthenticated = true;
+    notifyListeners();
+    return true;
   }
 
   Future<void> logout() async {
