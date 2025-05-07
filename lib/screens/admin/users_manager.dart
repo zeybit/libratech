@@ -27,7 +27,7 @@ class _AdminUserPageState extends State<AdminUserPage> {
     if (token == null) return;
 
     final response = await http.get(
-      Uri.parse('http://localhost:5000/api/users'), // endpoint örnek
+      Uri.parse('http://localhost:5000/api/users'), // endpoint
       headers: {'Authorization': 'Bearer $token'},
     );
     print('Gönderilen token: $token');

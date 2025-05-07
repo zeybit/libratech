@@ -9,7 +9,7 @@ class AdminDrawer extends StatefulWidget {
   final Function onLogout;
 
   const AdminDrawer({Key? key, required this.token, required this.onLogout})
-      : super(key: key);
+    : super(key: key);
 
   @override
   State<AdminDrawer> createState() => _UserDrawerState();
@@ -44,7 +44,12 @@ class _UserDrawerState extends State<AdminDrawer> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromRGBO(mainBrown.red, mainBrown.green, mainBrown.blue, 0.9),
+                  Color.fromRGBO(
+                    mainBrown.red,
+                    mainBrown.green,
+                    mainBrown.blue,
+                    0.9,
+                  ),
                   mainBrown,
                 ],
                 begin: Alignment.topLeft,
@@ -123,8 +128,7 @@ class _UserDrawerState extends State<AdminDrawer> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      AddBookScreen(token: widget.token),
+                  builder: (context) => AddBookScreen(token: widget.token),
                 ),
               );
             },
@@ -137,8 +141,7 @@ class _UserDrawerState extends State<AdminDrawer> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      UserProfileScreen(token: widget.token),
+                  builder: (context) => UserProfileScreen(token: widget.token),
                 ),
               );
             },

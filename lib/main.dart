@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:untitled/widgets/auth_wrapper.dart';
-
+import 'theme/app_theme.dart';
 import 'screens/user/userHome_screen.dart';
 import 'screens/user/user_profile.dart';
 import 'screens/admin/admin_home_screen.dart';
 import 'screens/login/login_screen.dart';
 import 'widgets/borrowed_books_screen.dart';
 import 'providers/user_provider.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: AppTheme.backgroundColor,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
@@ -48,10 +57,9 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'Libratech',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: AppTheme.lightTheme, // Aydınlık tema
+      darkTheme: AppTheme.darkTheme, // Karanlık tema (opsiyonel)
+      themeMode: ThemeMode.light,
       home:
           _isLoading
               ? const Scaffold(body: Center(child: CircularProgressIndicator()))
